@@ -1,30 +1,30 @@
 #include <Arduino.h>
+// 定义LED引脚
 const int ledPin = 2;
-// PWM参数
-const int pwmChannel = 0;
-const int freq = 5000;
-const int resolution = 8;
-unsigned long prevTime = 0;
-const unsigned long interval = 15;
-int brightness = 0;
-int step = 1;
+const int pwmCh = 0;   // 手动分配PWM通道0
+
+// 设置PWM属性
+const int freq = 5000;          // 频率 5000Hz
+const int resolution = 8;       // 分辨率 8位 (0-255)
 
 void setup() {
   Serial.begin(115200);
-  ledcSetup(pwmChannel, freq, resolution);
-  ledcAttachPin(ledPin, pwmChannel);
+  // 1. 配置PWM通道
+  ledcSetup(pwmCh, freq, resolution);
+  // 2. 绑定引脚到通道
+  ledcAttachPin(ledPin, pwmCh);
 }
 
 void loop() {
-  unsigned long curTime = millis();
-  if (curTime - prevTime >= interval)
-  {
-    prevTime = curTime;
-    brightness += step;
-    // 亮度边界反转渐变方向
-    if (brightness <= 0 || brightness >= 255) {
-      step = -step;
-    }
-    ledcWrite(pwmChannel, brightness);
+  // 逐渐变亮
+  for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){
+    ledcWrite(pwmCh, dutyCycle);
+    delay(10);
   }
+  // 逐渐变暗
+  for(int dutyCycle = 255; dutyCycle >= 0; dutyCycle--){
+    ledcWrite(pwmCh, dutyCycle);
+    delay(10);
+  }
+  Serial.println("Breathing cycle completed");
 }
